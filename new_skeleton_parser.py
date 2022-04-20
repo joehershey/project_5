@@ -81,58 +81,94 @@ def parseJson(json_file):
             seller = item["Seller"] #contains other fields
             s_rating = seller["Rating"]
             s_id = seller["UserID"]
-            location = item["Location"]
-            country = item["Country"]
+            if "Location" in item.keys():
+                location = item["Location"]
+            else:
+                location = "NULL"
+            if "Country" in item.keys():
+                country = item["Country"]
+            else:
+                country = "NULL"
             item_id = item["ItemID"]
-            seller_data = s_rating + "|" + s_id + "|" + location + "|" + country + "|" + item_id
+            seller_data = s_rating + "|" + s_id + "|" + location + "|" + country + "|" + item_id + "\n"
+            with open("Seller.txt", 'a') as f:
+                f.write(seller_data)
             #seller = item["Seller"] #contains other fields
             #rating = item["Seller"]["Rating"]
 
             # Bidder(Rating, *UserID, Location, Country, **ItemID)
             bids = item["Bids"] #its a list
-            for bid in bids:
-                bidder = bid["Bidder"]
-                b_rating = bidder["Rating"]
-                b_id = bidder["UserID"]
-                b_location = bidder["Location"]
-                b_country = bidder["Country"]
+        
+            if bids != None:
+                for bid_dict in bids:
+                    bid = bid_dict["Bid"]
+                    bidder = bid["Bidder"]
+                    #print(bidder)
+                    #print(bidder["Country"])
+                    
+                    b_rating = bidder["Rating"]
+                    b_id = bidder["UserID"]
+                    if "Location" in bidder.keys():
+                        b_location = bidder["Location"]
+                    else:
+                        b_location = "NULL"
+                    if "Country" in bidder.keys():
+                        b_country = bidder["Country"]
+                    else:
+                        b_country = "NULL"
 
-                month = transformMonth(bid["Time"][0:3]) #month in num form
-                length = len(bid["Time"]) #length of time string
-                time = month + bid["Time"][length - 3:] #num month appended to rest of timestr
-                
-                amount = transformDollar(bid["Amount"])
-                pass
+                    month = transformMonth(bid["Time"][0:3]) #month in num form
+                    length = len(bid["Time"]) #length of time string
+                    time = month + bid["Time"][length - 3:] #num month appended to rest of timestr
+                    amount = transformDollar(bid["Amount"])
+                    with open("Bidder.txt", 'a') as f:
+                        f.write(b_rating+columnSeparator+b_id+columnSeparator+b_location
+                                +columnSeparator+b_country+columnSeparator+item_id+"\n")
+                    #Bid (*UserID, Amount, *Time, **ItemID)
+                    with open("Bid.txt", 'a') as f:
+                        f.write(b_id+columnSeparator+amount
+                                +columnSeparator+time+columnSeparator+item_id+"\n")
 
-            id_num = item["ItemID"]
-            name = item["Name"]
-            category = item["Category"] #its a list
-            current = item["Currently"] #transformDollar
-            first_bid = item["First_Bid"] #transformDollar
-            number_of_bids = item["Number_of_Bids"]
-            location = item["Location"]
-            country = item["Country"]
-            started = item["Started"] #transformDttm
-            ends = item["Ends"] #transformDttm
-            description = item["Description"]
-            print(bids)
-            """
+            cate_list = item["Category"] #its a list
+            with open("Category.txt", 'a') as f:
+                        f.write(','.join(cate_list)+columnSeparator+item_id+"\n")
+            #print(category)
             
+            
+            name = item["Name"]
+            current = transformDollar(item["Currently"]) #transformDollar
+            first_bid = transformDollar(item["First_Bid"]) #transformDollar
+            number_of_bids = item["Number_of_Bids"]
+            if "Buy_Price" in item.keys():
+                buy_price = transformDollar(item["Buy_Price"])
+            else:
+                buy_price = "NULL"
+            started = transformDttm(item["Started"]) #transformDttm
+            ends = transformDttm(item["Ends"]) #transformDttm
+            description = item["Description"]
+            #print(bids)
+            #print(started)
+            #print(ends)
+
+            #Item (*ItemID, Started, Ends, Number_of_Bids, First_Bid, Name, Location, Country, Buy_Price, Currently, UserID(ofseller)?)
+            item_data = item_id + columnSeparator + number_of_bids + columnSeparator + first_bid + columnSeparator + location + columnSeparator + country + columnSeparator + buy_price + columnSeparator + current + columnSeparator+item_id + "\n"
+            with open("item.txt", 'a') as f:
+                f.write(item_data)
+            
+            """
             TODO: traverse the items dictionary to extract information from the
             given `json_file' and generate the necessary .dat files to generate
             the SQL tables based on your relation design
             """
-            pass
-    with open("Seller.dat", 'a') as f:
-        f.write()
-    with open("Bidder.dat", 'a') as f:
-        f.write()
+            
+            
+    """
     with open("Bid.dat", 'a') as f:
         f.write()
     with open("Category.dat", 'a') as f:
         f.write()
     with open("Item.dat", 'a') as f:
-        f.write()
+        f.write()"""
 
 
 """
@@ -143,6 +179,17 @@ def main(argv):
     if len(argv) < 2:
         print >> sys.stderr, 'Usage: python skeleton_json_parser.py <path to json files>'
         sys.exit(1)
+    #clear the dat files
+    with open("Seller.txt", 'a') as f:
+        f.write("")
+    with open("Bidder.txt", 'a') as f:
+        f.write("")
+    with open("Bid.txt", 'a') as f:
+        f.write("")
+    with open("Category.txt", 'a') as f:
+        f.write("")
+    with open("Item.txt", 'a') as f:
+        f.write("")
     # loops over all .json files in the argument
     for f in argv[1:]:
         if isJson(f):
