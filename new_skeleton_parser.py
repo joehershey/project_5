@@ -90,19 +90,23 @@ def parseJson(json_file):
 
             # Bidder(Rating, *UserID, Location, Country, **ItemID)
             bids = item["Bids"] #its a list
-            for bid in bids:
-                bidder = bid["Bidder"]
-                b_rating = bidder["Rating"]
-                b_id = bidder["UserID"]
-                b_location = bidder["Location"]
-                b_country = bidder["Country"]
+            if bids != None:
+                for bid in bids:
+                    bidder = bid["Bidder"]
+                    b_rating = bidder["Rating"]
+                    b_id = bidder["UserID"]
+                    b_location = bidder["Location"]
+                    b_country = bidder["Country"]
+                    item_id = item["UserID"]
+                    bidder_data = b_rating + "|" + b_id + "|" + b_location + "|" + b_country + "|" + item_id
 
-                month = transformMonth(bid["Time"][0:3]) #month in num form
-                length = len(bid["Time"]) #length of time string
-                time = month + bid["Time"][length - 3:] #num month appended to rest of timestr
-                
-                amount = transformDollar(bid["Amount"])
-                pass
+                    #bid data below use for bid table
+                    month = transformMonth(bid["Time"][0:3]) #month in num form
+                    length = len(bid["Time"]) #length of time string
+                    time = month + bid["Time"][length - 3:] #num month appended to rest of timestr
+
+                    amount = transformDollar(bid["Amount"])
+                    pass
 
             id_num = item["ItemID"]
             name = item["Name"]
