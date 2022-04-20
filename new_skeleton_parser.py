@@ -122,8 +122,10 @@ def parseJson(json_file):
                     time = month + bid["Time"][length - 3:] #num month appended to rest of timestr
                     amount = transformDollar(bid["Amount"])
                     with open("Bidder.txt", 'a') as f:
+                        """f.write(b_rating+columnSeparator+b_id+columnSeparator+b_location
+                                +columnSeparator+b_country+columnSeparator+item_id+"\n")"""
                         f.write(b_rating+columnSeparator+b_id+columnSeparator+b_location
-                                +columnSeparator+b_country+columnSeparator+item_id+"\n")
+                                +columnSeparator+b_country+"\n")
                     #Bid (*UserID, Amount, *Time, **ItemID)
                     with open("Bid.txt", 'a') as f:
                         f.write(b_id+columnSeparator+amount
@@ -151,7 +153,9 @@ def parseJson(json_file):
             #print(ends)
 
             #Item (*ItemID, Started, Ends, Number_of_Bids, First_Bid, Name, Location, Country, Buy_Price, Currently, UserID(ofseller)?)
-            item_data = item_id + columnSeparator + number_of_bids + columnSeparator + first_bid + columnSeparator + location + columnSeparator + country + columnSeparator + buy_price + columnSeparator + current + columnSeparator+item_id + "\n"
+            item_data = (item_id + columnSeparator + started + columnSeparator + ends + columnSeparator + number_of_bids +
+                         columnSeparator + first_bid + columnSeparator + location + columnSeparator +
+                         country + columnSeparator + buy_price + columnSeparator + current + columnSeparator + s_id + "\n")
             with open("item.txt", 'a') as f:
                 f.write(item_data)
             
@@ -161,14 +165,6 @@ def parseJson(json_file):
             the SQL tables based on your relation design
             """
             
-            
-    """
-    with open("Bid.dat", 'a') as f:
-        f.write()
-    with open("Category.dat", 'a') as f:
-        f.write()
-    with open("Item.dat", 'a') as f:
-        f.write()"""
 
 
 """
@@ -180,15 +176,15 @@ def main(argv):
         print >> sys.stderr, 'Usage: python skeleton_json_parser.py <path to json files>'
         sys.exit(1)
     #clear the dat files
-    with open("Seller.txt", 'a') as f:
+    with open("Seller.txt", 'w') as f:
         f.write("")
-    with open("Bidder.txt", 'a') as f:
+    with open("Bidder.txt", 'w') as f:
         f.write("")
-    with open("Bid.txt", 'a') as f:
+    with open("Bid.txt", 'w') as f:
         f.write("")
-    with open("Category.txt", 'a') as f:
+    with open("Category.txt", 'w') as f:
         f.write("")
-    with open("Item.txt", 'a') as f:
+    with open("Item.txt", 'w') as f:
         f.write("")
     # loops over all .json files in the argument
     for f in argv[1:]:
