@@ -73,7 +73,7 @@ Transform string to escape double quotes and surrond with quotes
 """
 
 def transformString(str):
-    str.replace("\"", "\"\"")
+    str = str.replace('"', '""')
     newStr = "\"" + str + "\""
     return newStr
 
@@ -152,7 +152,7 @@ def parseJson(json_file):
             started = transformDttm(item["Started"]) #transformDttm
             ends = transformDttm(item["Ends"]) #transformDttm
             if  "Description" in item.keys() and item["Description"] is not None:
-                description = transformString(item(["Description"]))
+                description = transformString( item["Description"] )
             else:
                 description = "NULL"
            
