@@ -69,74 +69,103 @@ def transformDollar(money):
     return sub(r'[^\d.]', '', money)
 
 """
+Transform string to escape double quotes and surrond with quotes
+"""
+
+def transformString(str):
+    str.replace("\"", "\"\"")
+    newStr = "\"" + str + "\""
+    return newStr
+
+"""
 Parses a single json file. Currently, there's a loop that iterates over each
 item in the data set. Your job is to extend this functionality to create all
 of the necessary SQL tables for your database.
 """
 def parseJson(json_file):
-    with open(json_file, 'r') as f:
+    with open(json_file, 'r') as f, open("Seller.dat", 'a') as seller_f, open("Category.dat", 'a') as category_f, open("Item.dat", 'a') as item_f, open("Bidder.dat", 'a') as bidder_f, open("Bid.dat", 'a') as bid_f:
         items = loads(f.read())['Items'] # creates a Python dictionary of Items for the supplied json file
         for item in items:
             # Seller(Rating, *UserID, Location, Country, **ItemID)
             seller = item["Seller"] #contains other fields
             s_rating = seller["Rating"]
             s_id = seller["UserID"]
-            location = item["Location"]
-            country = item["Country"]
+            if "Location" in item.keys():
+                location = transformString(item["Location"])
+            else:
+                location = "NULL"
+            if "Country" in item.keys():
+                country = transformString(item["Country"])
+            else:
+                country = "NULL"
             item_id = item["ItemID"]
-            seller_data = s_rating + "|" + s_id + "|" + location + "|" + country + "|" + item_id
-            #seller = item["Seller"] #contains other fields
-            #rating = item["Seller"]["Rating"]
+            seller_data = s_rating + "|" + s_id + "|" + location + "|" + country + "|" + item_id + "\n"
+            
+            seller_f.write(seller_data)
 
-            # Bidder(Rating, *UserID, Location, Country, **ItemID)
+            
             bids = item["Bids"] #its a list
             if bids != None:
-                for bid in bids:
+                #
+                for bid_dict in bids:
+                    bid = bid_dict["Bid"]
                     bidder = bid["Bidder"]
+                    
                     b_rating = bidder["Rating"]
-                    b_id = bidder["UserID"]
-                    b_location = bidder["Location"]
-                    b_country = bidder["Country"]
-                    item_id = item["UserID"]
-                    bidder_data = b_rating + "|" + b_id + "|" + b_location + "|" + b_country + "|" + item_id
+                    b_id = transformString(bidder["UserID"])
+                    if "Location" in bidder.keys():
+                        b_location = transformString(bidder["Location"])
+                    else:
+                        b_location = "NULL"
+                    if "Country" in bidder.keys():
+                        b_country = transformString(bidder["Country"])
+                    else:
+                        b_country = "NULL"
 
-                    #bid data below use for bid table
-                    month = transformMonth(bid["Time"][0:3]) #month in num form
-                    length = len(bid["Time"]) #length of time string
-                    time = month + bid["Time"][length - 3:] #num month appended to rest of timestr
-
+                    time = transformDttm(bid["Time"])
                     amount = transformDollar(bid["Amount"])
-                    pass
+                    # Bidder(Rating, *UserID, Location, Country, **ItemID)
+                    
+                    """f.write(b_rating+columnSeparator+b_id+columnSeparator+b_location
+                                +columnSeparator+b_country+columnSeparator+item_id+"\n")"""
+                    bidder_f.write(b_rating+columnSeparator+b_id+columnSeparator+b_location
+                            +columnSeparator+b_country+"\n")
+                    
+                    #Bid (*UserID, Amount, *Time, **ItemID)
+                    bid_f.write(b_id+columnSeparator+amount
+                            +columnSeparator+time+columnSeparator+item_id+"\n")
 
-            id_num = item["ItemID"]
-            name = item["Name"]
-            category = item["Category"] #its a list
-            current = item["Currently"] #transformDollar
-            first_bid = item["First_Bid"] #transformDollar
-            number_of_bids = item["Number_of_Bids"]
-            location = item["Location"]
-            country = item["Country"]
-            started = item["Started"] #transformDttm
-            ends = item["Ends"] #transformDttm
-            description = item["Description"]
-            print(bids)
-            """
+            cate_list = item["Category"] #its a list
+            """with open("Category.txt", 'a') as f:
+                        f.write(','.join(cate_list)+columnSeparator+item_id+"\n")"""
+            for category in cate_list:
+                category_f.write(item_id+columnSeparator+transformString(category)+"\n")
             
-            TODO: traverse the items dictionary to extract information from the
-            given `json_file' and generate the necessary .dat files to generate
-            the SQL tables based on your relation design
-            """
-            pass
-    with open("Seller.dat", 'a') as f:
-        f.write()
-    with open("Bidder.dat", 'a') as f:
-        f.write()
-    with open("Bid.dat", 'a') as f:
-        f.write()
-    with open("Category.dat", 'a') as f:
-        f.write()
-    with open("Item.dat", 'a') as f:
-        f.write()
+            name = transformString(item["Name"])
+            current = transformDollar(item["Currently"]) #transformDollar
+            first_bid = transformDollar(item["First_Bid"]) #transformDollar
+            number_of_bids = item["Number_of_Bids"]
+            if "Buy_Price" in item.keys():
+                buy_price = transformDollar(item["Buy_Price"])
+            else:
+                buy_price = "NULL"
+            started = transformDttm(item["Started"]) #transformDttm
+            ends = transformDttm(item["Ends"]) #transformDttm
+            if  "Description" in item.keys() and item["Description"] is not None:
+                description = transformString(item(["Description"]))
+            else:
+                description = "NULL"
+           
+
+            #Item (*ItemID, Started, Ends, Number_of_Bids, First_Bid, Name, Location, Country, Buy_Price, Currently, UserID(ofseller)?)
+            item_data = (item_id + columnSeparator + started + columnSeparator + ends + columnSeparator + number_of_bids +
+                         columnSeparator + first_bid + columnSeparator + name + columnSeparator + location + columnSeparator +
+                         country + columnSeparator + buy_price + columnSeparator + current + columnSeparator + s_id + 
+                         columnSeparator + description + "\n")
+            
+            item_f.write(item_data)
+            
+            
 
 
 """
@@ -147,6 +176,17 @@ def main(argv):
     if len(argv) < 2:
         print >> sys.stderr, 'Usage: python skeleton_json_parser.py <path to json files>'
         sys.exit(1)
+    #clear the dat files
+    with open("Seller.dat", 'w') as f:
+        f.write("")
+    with open("Bidder.dat", 'w') as f:
+        f.write("")
+    with open("Bid.dat", 'w') as f:
+        f.write("")
+    with open("Category.dat", 'w') as f:
+        f.write("")
+    with open("Item.dat", 'w') as f:
+        f.write("")
     # loops over all .json files in the argument
     for f in argv[1:]:
         if isJson(f):
