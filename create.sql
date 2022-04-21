@@ -23,13 +23,14 @@ create table Item (
 );
 
 create table Bid (
-    Amount INT, 
+    Amount FLOAT, 
     ItemID INT, 
     Time DATETIME,
     UserID CHAR(256),
-    PRIMARY KEY(UserID, Time)
+    PRIMARY KEY(ItemID, UserID, Time)
     FOREIGN KEY (ItemID)
         REFERENCES Item(ItemID)
+    
 );
 
 create table Seller (
@@ -37,8 +38,7 @@ create table Seller (
     UserID CHAR(256),
     Location CHAR(256), 
     Country CHAR(256), 
-    ItemID INT,
-    PRIMARY KEY(UserID,ItemID)
+    PRIMARY KEY(UserID)
 
 );
 
